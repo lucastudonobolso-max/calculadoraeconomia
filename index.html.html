@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Economia</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #2e2e2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .app {
+      background: #3d3d3d;
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 780px;
+      color: #fff;
+    }
+
+    .app-title { font-size: 22px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+    .app-sub { font-size: 13px; color: #bbb; margin-bottom: 2rem; }
+
+    .section-label {
+      font-size: 10px; font-weight: 500; color: #aaa;
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    .ctrl-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px; margin-bottom: 2rem;
+    }
+    .ctrl-box {
+      background: #4a4a4a; border: 0.5px solid #5a5a5a;
+      border-radius: 12px; padding: 14px 16px; transition: border-color .15s;
+    }
+    .ctrl-box:focus-within { border-color: #888; }
+    .ctrl-box label {
+      font-size: 10px; font-weight: 500; color: #bbb;
+      text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 8px;
+    }
+    .ctrl-box .row { display: flex; align-items: baseline; gap: 5px; }
+    .ctrl-box .row span { font-size: 13px; color: #aaa; }
+    .ctrl-box input[type=number] {
+      background: transparent; border: none; outline: none;
+      font-size: 18px; font-weight: 500; color: #fff;
+      font-family: inherit; width: 100%;
+      -moz-appearance: textfield; font-variant-numeric: tabular-nums;
+    }
+    .ctrl-box input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .ctrl-box select {
+      width: 100%; background: #4a4a4a; border: none; outline: none;
+      font-size: 15px; font-weight: 500; color: #fff; font-family: inherit; cursor: pointer;
+    }
+    .ctrl-box select option { background: #4a4a4a; color: #fff; }
+
+    .table-wrap {
+      background: #4a4a4a; border: 0.5px solid #5a5a5a;
+      border-radius: 12px; overflow: hidden; margin-bottom: 2rem;
+    }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    thead th {
+      font-size: 10px; font-weight: 500; color: #bbb;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      padding: 10px 14px; text-align: left;
+      border-bottom: 0.5px solid #555; background: #424242;
+    }
+    thead th:nth-child(2) { width: 130px; }
+    thead th:nth-child(3) { width: 120px; }
+    thead th:nth-child(4) { width: 120px; }
+    thead th:nth-child(5) { width: 40px; }
+    tbody tr { border-bottom: 0.5px solid #525252; transition: background .1s; }
+    tbody tr:hover { background: #525252; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 10px 14px; }
+    tbody td input[type=text], tbody td input[type=number] {
+      width: 100%; background: #fff; border: none; outline: none;
+      font-size: 14px; color: #111; font-family: inherit; padding: 4px 8px; border-radius: 6px;
+    }
+    tbody td input[type=number] { -moz-appearance: textfield; }
+    tbody td input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    tbody td input::placeholder { color: #aaa; }
+    .mono { font-size: 13px; color: #ccc; font-variant-numeric: tabular-nums; }
+    .mono.g { color: #8fcc66; font-weight: 500; }
+
+    .add-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; cursor: pointer; font-size: 13px; color: #aaa;
+      transition: color .15s; background: #424242; border-top: 0.5px solid #555;
+    }
+    .add-row:hover { color: #fff; }
+
+    .del-btn {
+      background: none; border: none; cursor: pointer; color: #777;
+      display: flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 8px; transition: all .15s;
+    }
+    .del-btn:hover { color: #ff7070; background: #5a3535; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px; margin-bottom: 2rem;
+    }
+    .card { background: #4a4a4a; border: 0.5px solid #5a5a5a; border-radius: 12px; padding: 16px; }
+    .card .lbl {
+      font-size: 10px; color: #bbb; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+    }
+    .card .num { font-size: 20px; font-weight: 500; color: #fff; font-variant-numeric: tabular-nums; }
+    .card .sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+    .card.g { border-color: #3a5a28; }
+    .card.g .num { color: #8fcc66; }
+    .card.w { border-color: #5a4020; }
+    .card.w .num { color: #f0b84a; }
+
+    .tabs {
+      display: flex; gap: 2px; margin-bottom: 1.5rem;
+      background: #424242; padding: 3px; border-radius: 8px;
+      width: fit-content; border: 0.5px solid #555;
+    }
+    .tab {
+      padding: 5px 16px; font-size: 12px; border: none;
+      background: transparent; cursor: pointer; border-radius: 6px;
+      color: #bbb; transition: all .15s; font-family: inherit;
+    }
+    .tab.active { background: #555; color: #fff; font-weight: 500; border: 0.5px solid #666; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .chart-wrap {
+      background: #4a4a4a; border: 0.5px solid #5a5a5a;
+      border-radius: 12px; padding: 18px; margin-bottom: 1.5rem;
+    }
+    .leg { display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+    .leg span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #bbb; }
+    .dot { width: 8px; height: 8px; border-radius: 2px; }
+
+    .ir-wrap {
+      background: #4a4a4a; border: 0.5px solid #5a5a5a;
+      border-radius: 12px; overflow: hidden; margin-bottom: 1rem;
+    }
+    .ir-wrap table { table-layout: auto; }
+    .ir-wrap thead th { width: auto; }
+    .ir-notice { font-size: 12px; color: #bbb; line-height: 1.7; margin-bottom: 1.5rem; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 500; letter-spacing: 0.04em; }
+    .b-g { background: #1a3010; color: #8fcc66; }
+    .b-w { background: #3a2810; color: #f0b84a; }
+    .b-r { background: #3a1010; color: #ff7070; }
+
+    .export-row {
+      display: flex; justify-content: flex-end;
+      padding-top: 1.5rem; border-top: 0.5px solid #555; gap: 8px;
+    }
+    .exp-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 8px;
+      border: 0.5px solid #5a5a5a; background: #4a4a4a;
+      color: #fff; font-size: 12px; font-family: inherit;
+      cursor: pointer; transition: all .15s; font-weight: 500;
+    }
+    .exp-btn:hover { background: #555; border-color: #777; }
+    .exp-btn i { font-size: 15px; }
+
+    @media (max-width: 600px) {
+      .app { padding: 1.25rem; }
+      thead th:nth-child(3), thead th:nth-child(4), tbody td:nth-child(3), tbody td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app" id="appWrap">
+
+  <div class="app-title">Calculadora de economia</div>
+  <div class="app-sub">Quanto você acumula — com juros e imposto de renda.</div>
+
+  <div class="section-label">Parâmetros</div>
+  <div class="ctrl-grid">
+    <div class="ctrl-box">
+      <label>Juros mensais</label>
+      <div class="row">
+        <input type="number" id="taxa" value="1" min="0" max="10" step="0.01" oninput="recalc()">
+        <span>% a.m.</span>
+      </div>
+    </div>
+    <div class="ctrl-box">
+      <label>Período</label>
+      <div class="row">
+        <input type="number" id="meses" value="12" min="1" max="60" step="1" oninput="recalc()">
+        <span>meses</span>
+      </div>
+    </div>
+    <div class="ctrl-box">
+      <label>Tributação IR</label>
+      <select id="irTipo" onchange="recalc()">
+        <option value="tabela">Tabela regressiva</option>
+        <option value="progressiva">Progressiva</option>
+        <option value="isento">Isento</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-label">Itens a economizar</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Valor mensal</th>
+          <th>Acumulado bruto</th>
+          <th>Após IR</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="add-row" onclick="addRow()">
+      <i class="ti ti-plus"></i> Adicionar item
+    </div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('proj', this)">Projeção</button>
+    <button class="tab" onclick="switchTab('ir', this)">Imposto de renda</button>
+  </div>
+
+  <div id="panelProj" class="panel active">
+    <div class="chart-wrap">
+      <div class="leg">
+        <span><span class="dot" style="background:#8fcc66"></span>Com juros</span>
+        <span><span class="dot" style="background:#5580aa"></span>Sem juros</span>
+      </div>
+      <div style="position:relative;width:100%;height:210px">
+        <canvas id="projChart" role="img" aria-label="Projeção mensal do valor acumulado com e sem juros"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="panelIr" class="panel">
+    <div class="ir-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Prazo</th>
+            <th>Alíquota</th>
+            <th>Bruto</th>
+            <th>IR retido</th>
+            <th>Líquido</th>
+          </tr>
+        </thead>
+        <tbody id="irBody"></tbody>
+      </table>
+    </div>
+    <p class="ir-notice" id="irNotice"></p>
+  </div>
+
+  <div class="export-row">
+    <button class="exp-btn" onclick="exportJPEG()"><i class="ti ti-photo"></i>Baixar JPEG</button>
+    <button class="exp-btn" onclick="exportPDF()"><i class="ti ti-file-type-pdf"></i>Baixar PDF</button>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+  let rows = [
+    { id: 1, nome: 'Assinatura streaming', valor: 55 },
+    { id: 2, nome: 'Delivery', valor: 180 },
+    { id: 3, nome: 'Academia', valor: 110 },
+  ];
+  let nid = 4, chart = null;
+
+  const fmt = n => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const getTaxa = () => Math.max(0, parseFloat(document.getElementById('taxa').value) || 0) / 100;
+  const getMeses = () => Math.max(1, parseInt(document.getElementById('meses').value) || 12);
+  const getIr = () => document.getElementById('irTipo').value;
+
+  function acum(m, n, t) {
+    if (t === 0) return m * n;
+    let s = 0;
+    for (let i = 1; i <= n; i++) s += m * Math.pow(1 + t, n - i + 1);
+    return s;
+  }
+
+  function irAliq(n, tipo) {
+    if (tipo === 'isento') return 0;
+    if (tipo === 'tabela') { if (n <= 6) return 0.225; if (n <= 12) return 0.20; if (n <= 24) return 0.175; return 0.15; }
+    return 0.275;
+  }
+
+  function liquido(b, a, n, tipo) {
+    const r = b - a;
+    if (r <= 0) return b;
+    return b - r * irAliq(n, tipo);
+  }
+
+  function renderRows() {
+    const t = getTaxa(), n = getMeses(), ir = getIr();
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = '';
+    rows.forEach(r => {
+      const b = acum(r.valor, n, t), a = r.valor * n, l = liquido(b, a, n, ir);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" placeholder="Nome do item" value="${r.nome}" onchange="upd(${r.id},'nome',this.value)"></td>
+        <td><input type="number" placeholder="0" value="${r.valor}" step="1" oninput="upd(${r.id},'valor',parseFloat(this.value)||0)"></td>
+        <td class="mono">${fmt(b)}</td>
+        <td class="mono g">${fmt(l)}</td>
+        <td><button class="del-btn" onclick="del(${r.id})" aria-label="Remover"><i class="ti ti-trash"></i></button></td>`;
+      tb.appendChild(tr);
+    });
+    renderCards();
+    renderChart();
+    renderIR();
+  }
+
+  function upd(id, f, v) {
+    const r = rows.find(x => x.id === id);
+    if (r) r[f] = v;
+    renderCards(); renderChart(); renderIR();
+  }
+
+  function del(id) { rows = rows.filter(r => r.id !== id); renderRows(); }
+
+  function addRow() {
+    rows.push({ id: nid++, nome: '', valor: 0 });
+    renderRows();
+    document.querySelectorAll('#tbody tr:last-child input')[0]?.focus();
+  }
+
+  function renderCards() {
+    const t = getTaxa(), n = getMeses(), ir = getIr();
+    const tm = rows.reduce((s, r) => s + r.valor, 0);
+    const tb = rows.reduce((s, r) => s + acum(r.valor, n, t), 0);
+    const ta = tm * n;
+    const tl = rows.reduce((s, r) => s + liquido(acum(r.valor, n, t), r.valor * n, n, ir), 0);
+    const rend = tb - ta, aliq = irAliq(n, ir), irv = rend * aliq;
+    document.getElementById('cards').innerHTML = `
+      <div class="card"><div class="lbl">Economia mensal</div><div class="num">${fmt(tm)}</div><div class="sub">total dos itens</div></div>
+      <div class="card"><div class="lbl">Aporte total</div><div class="num">${fmt(ta)}</div><div class="sub">em ${n} mês${n > 1 ? 'es' : ''}</div></div>
+      <div class="card g"><div class="lbl">Bruto c/ juros</div><div class="num">${fmt(tb)}</div><div class="sub">+${fmt(rend)} rendimento</div></div>
+      <div class="card ${ir === 'isento' ? 'g' : 'w'}"><div class="lbl">Líquido após IR</div><div class="num">${fmt(tl)}</div><div class="sub">${ir === 'isento' ? 'isento' : 'IR: ' + fmt(irv)}</div></div>`;
+  }
+
+  function renderChart() {
+    const t = getTaxa(), n = getMeses(), tm = rows.reduce((s, r) => s + r.valor, 0);
+    const labels = [], cj = [], sj = [];
+    for (let m = 1; m <= n; m++) {
+      labels.push('M' + m);
+      cj.push(Math.round(acum(tm, m, t)));
+      sj.push(Math.round(tm * m));
+    }
+    const ctx = document.getElementById('projChart').getContext('2d');
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [
+        { label: 'Com juros', data: cj, backgroundColor: '#5a9e38', borderRadius: 3, borderSkipped: false },
+        { label: 'Sem juros', data: sj, backgroundColor: '#3a6090', borderRadius: 3, borderSkipped: false }
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': ' + c.raw.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}},
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#bbb', autoSkip: n > 12, maxRotation: 0 }},
+          y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { font: { size: 11 }, color: '#aaa', callback: v => 'R$' + (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v) }}
+        }
+      }
+    });
+  }
+
+  function renderIR() {
+    const t = getTaxa(), tm = rows.reduce((s, r) => s + r.valor, 0), ir = getIr();
+    const ps = [
+      { l: 'Até 6 meses', m: 6, tab: 0.225 },
+      { l: '7–12 meses', m: 12, tab: 0.20 },
+      { l: '13–24 meses', m: 24, tab: 0.175 },
+      { l: 'Acima de 24m', m: 36, tab: 0.15 }
+    ];
+    let h = '';
+    ps.forEach(p => {
+      const b = acum(tm, p.m, t), a = tm * p.m, rend = b - a;
+      const aliq = ir === 'isento' ? 0 : (ir === 'tabela' ? p.tab : 0.275);
+      const irv = rend * aliq, l = b - irv;
+      const bc = aliq === 0 ? 'b-g' : aliq <= 0.175 ? 'b-w' : 'b-r';
+      h += `<tr style="border-bottom:0.5px solid #525252">
+        <td style="font-size:13px;padding:10px 14px;color:#eee">${p.l}</td>
+        <td style="padding:10px 14px"><span class="badge ${bc}">${aliq === 0 ? 'isento' : (aliq * 100).toFixed(1) + '%'}</span></td>
+        <td style="font-size:13px;color:#bbb;padding:10px 14px;font-variant-numeric:tabular-nums">${fmt(b)}</td>
+        <td style="font-size:13px;color:#ff8080;padding:10px 14px;font-variant-numeric:tabular-nums">${aliq === 0 ? '—' : '- ' + fmt(irv)}</td>
+        <td style="font-size:13px;font-weight:500;color:#8fcc66;padding:10px 14px;font-variant-numeric:tabular-nums">${fmt(l)}</td>
+      </tr>`;
+    });
+    document.getElementById('irBody').innerHTML = h;
+    const ns = {
+      tabela: '<strong style="color:#eee">Tabela regressiva</strong>: alíquota cai com o tempo — 22,5% (até 6m) até 15% (acima de 24m).',
+      progressiva: '<strong style="color:#eee">Tabela progressiva</strong>: alíquota única de 27,5% sobre o rendimento.',
+      isento: '<strong style="color:#eee">Isento</strong>: LCI, LCA, CRI, CRA e poupança — rendimento não tributado.'
+    };
+    document.getElementById('irNotice').innerHTML = ns[ir];
+  }
+
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+  }
+
+  function recalc() { renderRows(); }
+
+  async function captureCanvas() {
+    return await html2canvas(document.getElementById('appWrap'), { backgroundColor: '#3d3d3d', scale: 2, useCORS: true, logging: false });
+  }
+
+  async function exportJPEG() {
+    const btn = event.currentTarget, orig = btn.innerHTML;
+    btn.textContent = 'Gerando...';
+    try {
+      const canvas = await captureCanvas();
+      const link = document.createElement('a');
+      link.download = 'simulacao-economia.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+    } catch(e) { console.error(e); }
+    btn.innerHTML = orig;
+  }
+
+  async function exportPDF() {
+    const btn = event.currentTarget, orig = btn.innerHTML;
+    btn.textContent = 'Gerando...';
+    try {
+      const canvas = await captureCanvas();
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'a4' });
+      const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+      const ratio = canvas.width / canvas.height;
+      let iW = pW - 40, iH = iW / ratio;
+      if (iH > pH - 40) { iH = pH - 40; iW = iH * ratio; }
+      pdf.addImage(imgData, 'JPEG', (pW - iW) / 2, (pH - iH) / 2, iW, iH);
+      pdf.save('simulacao-economia.pdf');
+    } catch(e) { console.error(e); }
+    btn.innerHTML = orig;
+  }
+
+  recalc();
+</script>
+</body>
+</html>
